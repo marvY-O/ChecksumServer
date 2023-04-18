@@ -1,5 +1,6 @@
 package Authenticator;
 import java.io.*;
+import java.util.Random;
 import Database.*;
 import Message.*;
 import java.net.*;
@@ -29,6 +30,14 @@ class ClientHandler implements Runnable {
             sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
         }
         return sb.toString();
+    }
+    
+    public static void tamperByteArray(byte[] data) {
+    	if (data == null) return;
+        Random random = new Random();
+        for (int i = 0; i < data.length; i++) {
+            data[i] = (byte) (data[i] ^ random.nextInt(256));
+        }
     }
   
     @Override
@@ -65,6 +74,12 @@ class ClientHandler implements Runnable {
     		
     		oos.writeObject(cert);
     		
+    		Random random = new Random();
+    		int total = random.nextInt(6) + 3;
+    		Counter cnt = new Counter();
+    		
+    		System.out.printf("Will tamper %d packets\n", total);
+    		
     		Runnable receiver = new Runnable() {
                 @Override
                 public void run() {
@@ -90,6 +105,7 @@ class ClientHandler implements Runnable {
 									continue;
 								}
 								// p.client_ip = serverIP;
+					
 								
 								synchronized (buffer) {
 									if (buffer.containsKey(destAddr)) {
@@ -121,7 +137,15 @@ class ClientHandler implements Runnable {
                 		}
             			try {
             				curPacket.cert_id = certIDStore.get(s.getInetAddress());
-            				System.out.printf("Sending to %s\n", curPacket.destination_ip);
+//            				System.out.printf("Sending to %s\n", curPacket.destination_ip);
+            				if (cnt.get() < total) {
+								int dec = random.nextInt(2);
+								if (dec == 1) {
+									tamperByteArray(curPacket.payload);
+									System.out.println("Tampered");
+									cnt.inc();
+								}
+							}
             				oos.writeObject(curPacket);
             			} catch(IOException e) {
             				e.printStackTrace();

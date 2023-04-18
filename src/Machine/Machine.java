@@ -171,7 +171,7 @@ public class Machine{
             				try {
             					Packet p = (Packet) ois.readObject();
             					if (p.pkt_id == packets.size()) {
-            						System.out.printf("File Send Successfully!");
+            						System.out.printf("File Sent Successfully!");
             						return;
             					}
             					synchronized(sendBuffer) {
@@ -199,11 +199,10 @@ public class Machine{
                 System.out.printf("Sending packets..\n");
         		
         		for (Packet packet: packets) {
-//        			System.out.printf("Sending  %d..\n", packet.pkt_id);
         			oos.writeObject(packet);
         		}
         		
-        		System.out.printf("Sent packets..\n");
+        		
             	
             }
             else if (x == 2) {
@@ -224,6 +223,7 @@ public class Machine{
             		@Override
             		public void run() {
             			while (true) {
+            				if (recievedPackets.get() == totalPackets) return;
             				if (sendBuffer.isEmpty()) continue;
             				Packet p = new Packet();
             				p.client_ip = clientIP;
@@ -252,15 +252,15 @@ public class Machine{
 	            			try {
 	            				Packet p = (Packet) ois.readObject();
 	            				if (!Checksum.verifyChecksum(p.payload, p.checksum)) {
-	            					System.out.printf("Requesting for packet %d again as checksum verification failed!", p.pkt_no);
+	            					System.out.printf("\nRequesting for packet %d again as checksum verification failed!\n", p.pkt_no);
 	            					synchronized(buffer) {
 	            						sendBuffer.add(p.pkt_no);
 	            					}
 	            				}
 	            				else {
+	            					System.out.println(p.pkt_no);
 	            					packets.set(p.pkt_no, p.payload);
 	            					recievedPackets.inc();
-	            					System.out.println(recievedPackets.get());
 	            					if (recievedPackets.get() == totalPackets) {
 	            						Packet finalPacket = new Packet();
 	            						finalPacket.client_ip = clientIP;
