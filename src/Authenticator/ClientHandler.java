@@ -73,6 +73,7 @@ class ClientHandler implements Runnable {
                 			Packet p;
 							try {
 								p = (Packet) ois.readObject();
+//								System.out.printf("Received from %s->%d,%d\n", p.client_ip, p.pkt_no, p.pkt_id);
 								//if (p.destination_ip == InetAddress.getLocalHost().getHostAddress());
 								if (p.pkt_id == -1){
 									System.out.printf("%s sending file to %s\n", p.client_ip, p.destination_ip);
@@ -81,12 +82,15 @@ class ClientHandler implements Runnable {
 								else if (p.pkt_id == -2) {
 									System.out.printf("Fetch request of %s from %s to %s\n", p.msg_name, p.client_ip, p.destination_ip);
 								}
+								
+								
 								InetAddress destAddr = InetAddress.getByName(p.destination_ip);
 								if (!p.cert_id.equals(certIDStore.get(s.getInetAddress()))){
 									System.out.println("FALSE SECURITY CERTIFICATE ID!!");
 									continue;
 								}
 								// p.client_ip = serverIP;
+								
 								synchronized (buffer) {
 									if (buffer.containsKey(destAddr)) {
 										buffer.get(destAddr).add(p);
@@ -117,6 +121,7 @@ class ClientHandler implements Runnable {
                 		}
             			try {
             				curPacket.cert_id = certIDStore.get(s.getInetAddress());
+//            				System.out.printf("Sending to %s\n", curPacket.destination_ip);
             				oos.writeObject(curPacket);
             			} catch(IOException e) {
             				e.printStackTrace();

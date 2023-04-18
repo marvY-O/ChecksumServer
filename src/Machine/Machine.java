@@ -105,7 +105,7 @@ public class Machine{
 //            	String fileName = sc.nextLine();
             	System.out.printf("Enter destination IP: ");
 //            	String destIP = sc.nextLine();
-            	String destIP = "!92.168.1.21";
+            	String destIP = "192.168.1.21";
             	String fileName = "file.txt";
             	
             	File file = new File(fileName);
@@ -142,9 +142,6 @@ public class Machine{
         		
         		oos.writeObject(firstPacket);
         		
-        		for (Packet packet: packets) {
-        			oos.writeObject(packet);
-        		}
             	
             	Queue<Integer> sendBuffer = new LinkedList<Integer>();
             	
@@ -155,6 +152,7 @@ public class Machine{
             				Packet p;
             				if (sendBuffer.isEmpty()) continue;
             				synchronized(sendBuffer) {
+            					System.out.printf("Sending packet again..");
             					p = packets.get(sendBuffer.poll());
             				}
             				try{
@@ -197,6 +195,15 @@ public class Machine{
                 
                 Thread send = new Thread(sender);
                 send.start();
+                
+                System.out.printf("Sending packets..\n");
+        		
+        		for (Packet packet: packets) {
+//        			System.out.printf("Sending  %d..\n", packet.pkt_id);
+        			oos.writeObject(packet);
+        		}
+        		
+        		System.out.printf("Sent packets..\n");
             	
             }
             else if (x == 2) {
@@ -217,6 +224,7 @@ public class Machine{
             		@Override
             		public void run() {
             			while (true) {
+            				if (sendBuffer.isEmpty()) continue;
             				Packet p = new Packet();
             				p.client_ip = clientIP;
             				p.destination_ip = destIP;
@@ -282,10 +290,6 @@ public class Machine{
                 
                 Thread send = new Thread(sender);
                 send.start();
-                
-                
-            	
-            	
 
             }
             else {
