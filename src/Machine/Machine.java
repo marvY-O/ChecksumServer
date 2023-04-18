@@ -248,41 +248,43 @@ public class Machine{
             	Runnable reciever = new Runnable() {
             		@Override
             		public void run() {
-            			try {
-            				Packet p = (Packet) ois.readObject();
-            				if (!Checksum.verifyChecksum(p.payload, p.checksum)) {
-            					System.out.printf("Requesting for packet %d again as checksum verification failed!", p.pkt_no);
-            					synchronized(buffer) {
-            						sendBuffer.add(p.pkt_no);
-            					}
-            				}
-            				else {
-            					packets.set(p.pkt_no, p.payload);
-            					recievedPackets.inc();
-            					System.out.println(recievedPackets.get());
-            					if (recievedPackets.get() == totalPackets) {
-            						Packet finalPacket = new Packet();
-            						finalPacket.client_ip = clientIP;
-            						finalPacket.destination_ip = destIP;
-            						finalPacket.cert_id = certID;
-            						finalPacket.pkt_id = totalPackets;
-            						oos.writeObject(finalPacket);
-            						System.out.printf("Recieved all packets successfully!\n");
-            						
-            						File outFile = new File(fileName);
-            						
-            						convertPacketsToFile(packets, outFile);
-            						writeByteArrayToFile(Files.readAllBytes(outFile.toPath()), fileName);
-            						
-            						System.out.printf("Saved to disk!");
-            						return;
-            					}
-            				}
-            			} catch (IOException e) {
-        					e.printStackTrace();
-        				} catch (ClassNotFoundException e) {
-        					e.printStackTrace();
-        				}
+            			while (true) {
+	            			try {
+	            				Packet p = (Packet) ois.readObject();
+	            				if (!Checksum.verifyChecksum(p.payload, p.checksum)) {
+	            					System.out.printf("Requesting for packet %d again as checksum verification failed!", p.pkt_no);
+	            					synchronized(buffer) {
+	            						sendBuffer.add(p.pkt_no);
+	            					}
+	            				}
+	            				else {
+	            					packets.set(p.pkt_no, p.payload);
+	            					recievedPackets.inc();
+	            					System.out.println(recievedPackets.get());
+	            					if (recievedPackets.get() == totalPackets) {
+	            						Packet finalPacket = new Packet();
+	            						finalPacket.client_ip = clientIP;
+	            						finalPacket.destination_ip = destIP;
+	            						finalPacket.cert_id = certID;
+	            						finalPacket.pkt_id = totalPackets;
+	            						oos.writeObject(finalPacket);
+	            						System.out.printf("Recieved all packets successfully!\n");
+	            						
+	            						File outFile = new File(fileName);
+	            						
+	            						convertPacketsToFile(packets, outFile);
+	            						writeByteArrayToFile(Files.readAllBytes(outFile.toPath()), fileName);
+	            						
+	            						System.out.printf("Saved to disk!");
+	            						return;
+	            					}
+	            				}
+	            			} catch (IOException e) {
+	        					e.printStackTrace();
+	        				} catch (ClassNotFoundException e) {
+	        					e.printStackTrace();
+	        				}
+            			}
             		}
             	};
             	
