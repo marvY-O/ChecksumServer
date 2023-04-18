@@ -150,13 +150,15 @@ public class Machine{
             		public void run() {
             			while (true) {
             				Packet p;
-            				if (sendBuffer.isEmpty()) continue;
+            				
             				synchronized(sendBuffer) {
+            					if (sendBuffer.isEmpty()) continue;
             					int j = sendBuffer.poll();
-            					System.out.printf("Sending packet %d again..\n", j);
             					p = packets.get(j);
             				}
+//            				if (p.msg_name.equals("resend")) System.out.printf("Sending packet %d again..\n", p.pkt_id);
             				try{
+            					System.out.printf("Sending %d\n", p.pkt_id);
             					oos.writeObject(p);
             				} catch(IOException e) {
             					e.printStackTrace();
@@ -175,6 +177,8 @@ public class Machine{
             						System.out.printf("File Sent Successfully!");
             						return;
             					}
+            					
+            					System.out.printf("Resend request of packet %d from %s\n", p.pkt_id, p.client_ip);
             					synchronized(sendBuffer) {
             						sendBuffer.add(p.pkt_id);
             					}
@@ -199,12 +203,12 @@ public class Machine{
                 
                 System.out.printf("Sending packets..\n");
         		
-        		for (Packet packet: packets) {
-        			oos.writeObject(packet);
+        		for (int i=0; i<packets.size(); i++) {
+        			synchronized(sendBuffer) {
+        				sendBuffer.add(i);
+        			}
         		}
-        		
-        		
-            	
+
             }
             else if (x == 2) {
             	System.out.printf("Waiting for file..\n");
@@ -225,18 +229,20 @@ public class Machine{
             		public void run() {
             			while (true) {
             				if (recievedPackets.get() == totalPackets) return;
-            				if (sendBuffer.isEmpty()) continue;
+            				
             				Packet p = new Packet();
+            				
+            				synchronized(sendBuffer) {
+        						if (sendBuffer.isEmpty()) continue;
+        						p.pkt_id = sendBuffer.poll();
+            				}
+            				
             				p.client_ip = clientIP;
             				p.destination_ip = destIP;
             				p.pkt_no = -1;
             				p.msg_name = "resend";
             				p.cert_id = certID;
  
-        					synchronized(sendBuffer) {
-        						p.pkt_id = sendBuffer.poll();
-            				}
-            			
             				try{
             					oos.writeObject(p);
             				} catch(IOException e) {

@@ -75,7 +75,7 @@ class ClientHandler implements Runnable {
     		oos.writeObject(cert);
     		
     		Random random = new Random();
-    		int total = random.nextInt(6) + 3;
+    		int total = random.nextInt(2) + 3;
     		Counter cnt = new Counter();
     		
     		System.out.printf("Will tamper %d packets\n", total);
@@ -100,10 +100,10 @@ class ClientHandler implements Runnable {
 								
 								
 								InetAddress destAddr = InetAddress.getByName(p.destination_ip);
-								if (!p.cert_id.equals(certIDStore.get(s.getInetAddress()))){
-									System.out.println("FALSE SECURITY CERTIFICATE ID!!");
-									continue;
-								}
+//								if (!p.cert_id.equals(certIDStore.get(s.getInetAddress()))){
+//									System.out.println("FALSE SECURITY CERTIFICATE ID!!");
+//									continue;
+//								}
 								// p.client_ip = serverIP;
 					
 								
@@ -138,14 +138,18 @@ class ClientHandler implements Runnable {
             			try {
             				curPacket.cert_id = certIDStore.get(s.getInetAddress());
 //            				System.out.printf("Sending to %s\n", curPacket.destination_ip);
-            				if (cnt.get() < total) {
+            				
+            				if (!curPacket.msg_name.equals("resend") && cnt.get() < total) {
 								int dec = random.nextInt(2);
 								if (dec == 1) {
 									tamperByteArray(curPacket.payload);
-									System.out.println("Tampered");
+									System.out.printf("Tampered %d from %s to %s\n", curPacket.pkt_no, curPacket.client_ip, curPacket.destination_ip);
 									cnt.inc();
 								}
 							}
+            				if (curPacket.msg_name.equals("resend")) {
+            					System.out.printf("Resend request from %s\n", curPacket.client_ip);
+            				}
             				oos.writeObject(curPacket);
             			} catch(IOException e) {
             				e.printStackTrace();
