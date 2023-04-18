@@ -152,8 +152,9 @@ public class Machine{
             				Packet p;
             				if (sendBuffer.isEmpty()) continue;
             				synchronized(sendBuffer) {
-            					System.out.printf("Sending packet again..");
-            					p = packets.get(sendBuffer.poll());
+            					int j = sendBuffer.poll();
+            					System.out.printf("Sending packet %d again..\n", j);
+            					p = packets.get(j);
             				}
             				try{
             					oos.writeObject(p);
@@ -211,7 +212,7 @@ public class Machine{
             	int totalPackets = firstPacket.pkt_no;
             	String fileName = firstPacket.msg_name;
             	String destIP = firstPacket.client_ip;
-            	System.out.printf("Ready to recieve %s\n", firstPacket.msg_name);
+            	System.out.printf("Ready to recieve %s from %s\n", firstPacket.msg_name, destIP);
             	
             	Vector<byte[]> packets = new Vector<byte[]>();
             	packets.setSize(totalPackets);
