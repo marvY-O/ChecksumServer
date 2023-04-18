@@ -65,10 +65,12 @@ public class Machine{
             SecurityCertificate cert = new SecurityCertificate();
             
             System.out.printf("Enter username: ");
-            cert.username = sc.next();
+//            cert.username = sc.next();
+            cert.username = "marvy";
             
             System.out.printf("Enter password: ");
-            cert.password = sc.next();
+//            cert.password = sc.next();
+            cert.password = "admin";
             
             oos.writeObject(cert);
             
@@ -93,15 +95,18 @@ public class Machine{
             
             System.out.printf("1.Send file\n2.Recieve file\n\n>>");
             int x = sc.nextInt();
+            sc.nextLine();
             
             int payload_size = 100;
 
             if (x == 1) {
             	//send file
             	System.out.printf("Enter file name: ");
-            	String fileName = sc.nextLine();
+//            	String fileName = sc.nextLine();
             	System.out.printf("Enter destination IP: ");
-            	String destIP = sc.nextLine();
+//            	String destIP = sc.nextLine();
+            	String destIP = "!92.168.1.21";
+            	String fileName = "file.txt";
             	
             	File file = new File(fileName);
             	List<byte[]> byteArray = divideFileIntoPackets(file, payload_size);
@@ -134,6 +139,12 @@ public class Machine{
         		firstPacket.checksum = -1;
         		firstPacket.msg_name = fileName;
         		firstPacket.cert_id = certID;
+        		
+        		oos.writeObject(firstPacket);
+        		
+        		for (Packet packet: packets) {
+        			oos.writeObject(packet);
+        		}
             	
             	Queue<Integer> sendBuffer = new LinkedList<Integer>();
             	
@@ -142,6 +153,7 @@ public class Machine{
             		public void run() {
             			while (true) {
             				Packet p;
+            				if (sendBuffer.isEmpty()) continue;
             				synchronized(sendBuffer) {
             					p = packets.get(sendBuffer.poll());
             				}
