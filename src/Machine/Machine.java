@@ -207,12 +207,12 @@ public class Machine{
             	
             }
             else if (x == 2) {
-            	System.out.printf("Waiting for file..");
+            	System.out.printf("Waiting for file..\n");
             	Packet firstPacket = (Packet) ois.readObject();
             	int totalPackets = firstPacket.pkt_no;
             	String fileName = firstPacket.msg_name;
             	String destIP = firstPacket.client_ip;
-            	System.out.printf("Ready to recieve %s", firstPacket.msg_name);
+            	System.out.printf("Ready to recieve %s\n", firstPacket.msg_name);
             	
             	Vector<byte[]> packets = new Vector<byte[]>();
             	packets.setSize(totalPackets);
@@ -259,6 +259,7 @@ public class Machine{
             				else {
             					packets.set(p.pkt_no, p.payload);
             					recievedPackets.inc();
+            					System.out.println(recievedPackets.get());
             					if (recievedPackets.get() == totalPackets) {
             						Packet finalPacket = new Packet();
             						finalPacket.client_ip = clientIP;

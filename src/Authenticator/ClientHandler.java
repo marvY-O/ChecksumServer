@@ -121,7 +121,7 @@ class ClientHandler implements Runnable {
                 		}
             			try {
             				curPacket.cert_id = certIDStore.get(s.getInetAddress());
-//            				System.out.printf("Sending to %s\n", curPacket.destination_ip);
+            				System.out.printf("Sending to %s\n", curPacket.destination_ip);
             				oos.writeObject(curPacket);
             			} catch(IOException e) {
             				e.printStackTrace();
