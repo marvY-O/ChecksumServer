@@ -76,7 +76,7 @@ class ClientHandler implements Runnable {
     		oos.writeObject(cert);
     		
     		Random random = new Random();
-    		int total = random.nextInt(1) + 0;
+    		int total = 1;
     		Counter cnt = new Counter();
     		
     		System.out.printf("Will tamper %d packets\n", total);
@@ -89,13 +89,11 @@ class ClientHandler implements Runnable {
                 			Packet p;
 							try {
 								p = (Packet) ois.readObject();
-								if (p.pkt_id == -1){
+								if (p.pkt_no == 0){
 									System.out.printf("%s sending file to %s\n", p.client_ip, p.destination_ip);
-									dbUsers.addEntry(p.client_ip, p.destination_ip, p.pkt_no);
+									dbUsers.addEntry(p.client_ip, p.destination_ip, p.pkt_id);
 								}
-								else if (p.pkt_id == -2) {
-									System.out.printf("Fetch request of %s from %s to %s\n", p.msg_name, p.client_ip, p.destination_ip);
-								}
+								
 								InetAddress destAddr = InetAddress.getByName(p.destination_ip);
 								synchronized (buffer) {
 									if (buffer.containsKey(destAddr)) {
@@ -126,8 +124,7 @@ class ClientHandler implements Runnable {
                 		}
             			try {
             				curPacket.cert_id = certIDStore.get(s.getInetAddress());
-//            				System.out.printf("Sending to %s\n", curPacket.destination_ip);
-            				
+
             				if (!curPacket.msg_name.equals("resend") && cnt.get() < total) {
 								int dec = random.nextInt(2);
 								if (dec == 1) {
@@ -137,9 +134,6 @@ class ClientHandler implements Runnable {
 								}
 							}
             				
-//            				if (curPacket.msg_name.equals("resend")) {
-//            					System.out.printf("Resend request from %s\n", curPacket.client_ip);
-//            				}
             				oos.writeObject(curPacket);
             			} catch(IOException e) {
             				e.printStackTrace();

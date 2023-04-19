@@ -158,6 +158,7 @@ public class Machine{
 //            				if (p.msg_name.equals("resend")) System.out.printf("Sending packet %d again..\n", p.pkt_id);
             				try{
             					System.out.printf("Sending %d\n", p.pkt_id);
+            					p.checksum = Checksum.computeChecksum(p.payload);
             					oos.writeObject(p);
             				} catch(IOException e) {
             					e.printStackTrace();
@@ -178,6 +179,7 @@ public class Machine{
             					}
             					
             					System.out.printf("Resend request of packet %d from %s\n", p.pkt_id, p.client_ip);
+            					
             					synchronized(sendBuffer) {
             						sendBuffer.add(p.pkt_id);
             					}
@@ -223,33 +225,6 @@ public class Machine{
             	Queue<Integer> sendBuffer = new LinkedList<Integer>();
             	final Counter recievedPackets = new Counter();
             	
-            	Runnable sender = new Runnable() {
-            		@Override
-            		public void run() {
-            			while (true) {
-            				if (recievedPackets.get() == totalPackets) return;
-            				
-            				Packet p = new Packet();
-            				
-            				synchronized(sendBuffer) {
-        						if (sendBuffer.isEmpty()) continue;
-        						p.pkt_id = sendBuffer.poll();
-            				}
-            				
-            				p.client_ip = clientIP;
-            				p.destination_ip = destIP;
-            				p.pkt_no = -1;
-            				p.msg_name = "resend";
-            				p.cert_id = certID;
- 
-            				try{
-            					oos.writeObject(p);
-            				} catch(IOException e) {
-            					e.printStackTrace();
-            				}
-            			}
-            		}
-            	};
             	
             	Runnable reciever = new Runnable() {
             		@Override
@@ -259,10 +234,18 @@ public class Machine{
 	            				Packet p = (Packet) ois.readObject();
 	            				long actualValue = Checksum.computeChecksum(p.payload) ;
 	            				if (actualValue != p.checksum) {
+	            					
 	            					System.out.printf("\nRequesting for packet %d again as checksum verification failed!\n", p.pkt_no);
-	            					synchronized(buffer) {
-	            						sendBuffer.add(p.pkt_no);
-	            					}
+	            					
+	            					p.client_ip = clientIP;
+	                				p.destination_ip = destIP;
+	                				p.pkt_no = -1;
+	                				p.msg_name = "resend";
+	                				p.cert_id = certID;
+	                				p.payload = null;
+	                				
+	                				oos.writeObject(p);
+	                				
 	            				}
 	            				else {
 	            					packets.set(p.pkt_no, p.payload);
@@ -273,6 +256,7 @@ public class Machine{
 	            						finalPacket.destination_ip = destIP;
 	            						finalPacket.cert_id = certID;
 	            						finalPacket.pkt_id = totalPackets;
+	            						finalPacket.msg_name = "finish";
 	            						oos.writeObject(finalPacket);
 	            						System.out.printf("Recieved all packets successfully!\n");
 	            						
@@ -293,9 +277,6 @@ public class Machine{
             			}
             		}
             	};
-            	
-            	Thread send = new Thread(sender);
-                send.start();
                 
             	Thread recv = new Thread(reciever);
                 recv.start();
