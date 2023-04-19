@@ -79,7 +79,6 @@ class ClientHandler implements Runnable {
     		int total = 2;
     		Counter cnt = new Counter();
     		
-    		System.out.printf("Will tamper %d packets\n", total);
     		
     		Runnable receiver = new Runnable() {
                 @Override
