@@ -76,7 +76,7 @@ class ClientHandler implements Runnable {
     		oos.writeObject(cert);
     		
     		Random random = new Random();
-    		int total = 1;
+    		int total = 2;
     		Counter cnt = new Counter();
     		
     		System.out.printf("Will tamper %d packets\n", total);

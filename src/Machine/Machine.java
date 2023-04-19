@@ -158,7 +158,7 @@ public class Machine{
 //            				if (p.msg_name.equals("resend")) System.out.printf("Sending packet %d again..\n", p.pkt_id);
             				try{
             					System.out.printf("Sending %d\n", p.pkt_id);
-            					p.checksum = Checksum.computeChecksum(p.payload);
+//            					p.checksum = Checksum.computeChecksum(p.payload);
             					oos.writeObject(p);
             				} catch(IOException e) {
             					e.printStackTrace();
@@ -232,17 +232,17 @@ public class Machine{
             			while (true) {
 	            			try {
 	            				Packet p = (Packet) ois.readObject();
-	            				long actualValue = Checksum.computeChecksum(p.payload) ;
-	            				if (actualValue != p.checksum) {
+	            				
+	            				if (!Checksum.verifyChecksum(p.payload, p.checksum)) {
 	            					
 	            					System.out.printf("\nRequesting for packet %d again as checksum verification failed!\n", p.pkt_no);
 	            					
+	            					Packet re = new Packet();
+	            					re.pkt_id = p.pkt_id;
+	            					p.pkt_no = -1;
+	            					p.msg_name = "resend";
 	            					p.client_ip = clientIP;
-	                				p.destination_ip = destIP;
-	                				p.pkt_no = -1;
-	                				p.msg_name = "resend";
-	                				p.cert_id = certID;
-	                				p.payload = null;
+	            					p.destination_ip  = destIP;
 	                				
 	                				oos.writeObject(p);
 	                				
