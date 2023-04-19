@@ -90,7 +90,7 @@ class ClientHandler implements Runnable {
 							try {
 								p = (Packet) ois.readObject();
 								if (p.pkt_no == 0){
-									System.out.printf("%s sending file to %s\n", p.client_ip, p.destination_ip);
+//									System.out.printf("%s sending file to %s\n", p.client_ip, p.destination_ip);
 									dbUsers.addEntry(p.client_ip, p.destination_ip, p.pkt_id);
 								}
 								
@@ -128,6 +128,7 @@ class ClientHandler implements Runnable {
             				if (!curPacket.msg_name.equals("resend") && cnt.get() < total) {
 								int dec = random.nextInt(2);
 								if (dec == 1) {
+									System.out.printf("Tampered: %d\n", curPacket.pkt_no);
 									curPacket.payload = tamperByteArray(curPacket.payload);
 //									System.out.printf("Tampered %d from %s to %s\n", curPacket.pkt_no, curPacket.client_ip, curPacket.destination_ip);
 									cnt.inc();

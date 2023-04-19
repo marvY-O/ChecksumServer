@@ -134,7 +134,7 @@ public class Machine{
             	firstPacket.client_ip = clientIP;
             	firstPacket.destination_ip = destIP;
             	firstPacket.pkt_no = packets.size();
-        		firstPacket.pkt_id = 0;
+        		firstPacket.pkt_id = packets.size();
         		firstPacket.checksum = -1;
         		firstPacket.msg_name = fileName;
         		firstPacket.cert_id = certID;
@@ -235,16 +235,16 @@ public class Machine{
 	            				
 	            				if (!Checksum.verifyChecksum(p.payload, p.checksum)) {
 	            					
-	            					System.out.printf("\nRequesting for packet %d again as checksum verification failed!\n", p.pkt_no);
+	            					System.out.printf("\nRequesting for packet %d again as checksum verification failed!\n", p.pkt_id);
 	            					
 	            					Packet re = new Packet();
 	            					re.pkt_id = p.pkt_id;
-	            					p.pkt_no = -1;
-	            					p.msg_name = "resend";
-	            					p.client_ip = clientIP;
-	            					p.destination_ip  = destIP;
+	            					re.pkt_no = p.pkt_no;
+	            					re.msg_name = "resend";
+	            					re.client_ip = clientIP;
+	            					re.destination_ip  = destIP;
 	                				
-	                				oos.writeObject(p);
+	                				oos.writeObject(re);
 	                				
 	            				}
 	            				else {
