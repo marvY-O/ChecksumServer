@@ -144,28 +144,6 @@ public class Machine{
             	
             	Queue<Integer> sendBuffer = new LinkedList<Integer>();
             	
-            	Runnable sender = new Runnable() {
-            		@Override
-            		public void run() {
-            			while (true) {
-            				Packet p;
-            				int j;
-            				synchronized(sendBuffer) {
-            					if (sendBuffer.isEmpty()) continue;
-            					j = sendBuffer.poll();
-            				}
-            				p = packets.get(j);
-//            				if (p.msg_name.equals("resend")) System.out.printf("Sending packet %d again..\n", p.pkt_id);
-            				try{
-            					System.out.printf("Sending %d\n", p.pkt_id);
-//            					p.checksum = Checksum.computeChecksum(p.payload);
-            					oos.writeObject(p);
-            				} catch(IOException e) {
-            					e.printStackTrace();
-            				}
-            			}
-            		}
-            	};
             	
             	Runnable reciever = new Runnable() {
             		@Override
@@ -178,11 +156,14 @@ public class Machine{
             						return;
             					}
             					
-            					System.out.printf("Resend request of packet %d from %s\n", p.pkt_id, p.client_ip);
-            					
-            					synchronized(sendBuffer) {
-            						sendBuffer.add(p.pkt_id);
-            					}
+//            					System.out.printf("Resend request of packet %d from %s\n", p.pkt_id, p.client_ip);
+//            					
+////            					synchronized(sendBuffer) {
+////            						sendBuffer.add(p.pkt_id);
+////            					}
+//            					
+//            					Packet re = packets.get(p.pkt_id);
+//            					oos.writeObject(re);
             					
             					
             				} catch (IOException e) {
@@ -199,15 +180,11 @@ public class Machine{
             	Thread recv = new Thread(reciever);
                 recv.start();
                 
-                Thread send = new Thread(sender);
-                send.start();
                 
                 System.out.printf("Sending packets..\n");
         		
         		for (int i=0; i<packets.size(); i++) {
-        			synchronized(sendBuffer) {
-        				sendBuffer.add(i);
-        			}
+        			oos.writeObject(packets.get(i));
         		}
 
             }
@@ -235,16 +212,18 @@ public class Machine{
 	            				
 	            				if (!Checksum.verifyChecksum(p.payload, p.checksum)) {
 	            					
-	            					System.out.printf("\nRequesting for packet %d again as checksum verification failed!\n", p.pkt_id);
+	            					System.out.printf("Checksum verification failed for packet %d\n", p.pkt_no);
 	            					
-	            					Packet re = new Packet();
-	            					re.pkt_id = p.pkt_id;
-	            					re.pkt_no = p.pkt_no;
-	            					re.msg_name = "resend";
-	            					re.client_ip = clientIP;
-	            					re.destination_ip  = destIP;
-	                				
-	                				oos.writeObject(re);
+//	            					System.out.printf("\nRequesting for packet %d again as checksum verification failed!\n", p.pkt_id);
+//	            					
+//	            					Packet re = new Packet();
+//	            					re.pkt_id = p.pkt_id;
+//	            					re.pkt_no = p.pkt_no;
+//	            					re.msg_name = "resend";
+//	            					re.client_ip = clientIP;
+//	            					re.destination_ip  = destIP;
+//	                				
+//	                				oos.writeObject(re);
 	                				
 	            				}
 	            				else {
