@@ -88,8 +88,6 @@ class ClientHandler implements Runnable {
                 			Packet p;
 							try {
 								p = (Packet) ois.readObject();
-//								System.out.printf("Received from %s->%d,%d\n", p.client_ip, p.pkt_no, p.pkt_id);
-								//if (p.destination_ip == InetAddress.getLocalHost().getHostAddress());
 								if (p.pkt_id == -1){
 									System.out.printf("%s sending file to %s\n", p.client_ip, p.destination_ip);
 									dbUsers.addEntry(p.client_ip, p.destination_ip, p.pkt_no);
@@ -97,16 +95,7 @@ class ClientHandler implements Runnable {
 								else if (p.pkt_id == -2) {
 									System.out.printf("Fetch request of %s from %s to %s\n", p.msg_name, p.client_ip, p.destination_ip);
 								}
-								
-								
 								InetAddress destAddr = InetAddress.getByName(p.destination_ip);
-//								if (!p.cert_id.equals(certIDStore.get(s.getInetAddress()))){
-//									System.out.println("FALSE SECURITY CERTIFICATE ID!!");
-//									continue;
-//								}
-								// p.client_ip = serverIP;
-					
-								
 								synchronized (buffer) {
 									if (buffer.containsKey(destAddr)) {
 										buffer.get(destAddr).add(p);
@@ -132,8 +121,7 @@ class ClientHandler implements Runnable {
                 		if (buffer.get(s.getInetAddress()).size() == 0) continue;
                 		Packet curPacket;
                 		synchronized (buffer) {
-	            			curPacket = buffer.get(s.getInetAddress()).peek();
-	            			buffer.get(s.getInetAddress()).poll();
+	            			curPacket = buffer.get(s.getInetAddress()).poll();
                 		}
             			try {
             				curPacket.cert_id = certIDStore.get(s.getInetAddress());
@@ -147,6 +135,7 @@ class ClientHandler implements Runnable {
 									cnt.inc();
 								}
 							}
+            				
             				if (curPacket.msg_name.equals("resend")) {
             					System.out.printf("Resend request from %s\n", curPacket.client_ip);
             				}

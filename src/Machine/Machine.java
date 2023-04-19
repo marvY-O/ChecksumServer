@@ -150,12 +150,12 @@ public class Machine{
             		public void run() {
             			while (true) {
             				Packet p;
-            				
+            				int j;
             				synchronized(sendBuffer) {
             					if (sendBuffer.isEmpty()) continue;
-            					int j = sendBuffer.poll();
-            					p = packets.get(j);
+            					j = sendBuffer.poll();
             				}
+            				p = packets.get(j);
 //            				if (p.msg_name.equals("resend")) System.out.printf("Sending packet %d again..\n", p.pkt_id);
             				try{
             					System.out.printf("Sending %d\n", p.pkt_id);
@@ -258,14 +258,16 @@ public class Machine{
             			while (true) {
 	            			try {
 	            				Packet p = (Packet) ois.readObject();
-	            				if (!Checksum.verifyChecksum(p.payload, p.checksum)) {
+	            				System.out.println(p.pkt_no);
+	            				long actualValue = Checksum.computeChecksum(p.payload) ;
+	            				System.out.printf("Actual: %l, given: %l", actualValue, p.checksum);
+	            				if (actualValue != p.checksum) {
 	            					System.out.printf("\nRequesting for packet %d again as checksum verification failed!\n", p.pkt_no);
 	            					synchronized(buffer) {
 	            						sendBuffer.add(p.pkt_no);
 	            					}
 	            				}
 	            				else {
-	            					System.out.println(p.pkt_no);
 	            					packets.set(p.pkt_no, p.payload);
 	            					recievedPackets.inc();
 	            					if (recievedPackets.get() == totalPackets) {
