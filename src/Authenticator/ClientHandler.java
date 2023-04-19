@@ -32,12 +32,13 @@ class ClientHandler implements Runnable {
         return sb.toString();
     }
     
-    public static void tamperByteArray(byte[] data) {
-    	if (data == null) return;
+    public static byte[] tamperByteArray(byte[] data) {
+    	if (data == null) return null;
         Random random = new Random();
         for (int i = 0; i < data.length; i++) {
             data[i] = (byte) (data[i] ^ random.nextInt(256));
         }
+        return data;
     }
   
     @Override
@@ -75,7 +76,7 @@ class ClientHandler implements Runnable {
     		oos.writeObject(cert);
     		
     		Random random = new Random();
-    		int total = random.nextInt(2) + 3;
+    		int total = random.nextInt(1) + 0;
     		Counter cnt = new Counter();
     		
     		System.out.printf("Will tamper %d packets\n", total);
@@ -130,15 +131,15 @@ class ClientHandler implements Runnable {
             				if (!curPacket.msg_name.equals("resend") && cnt.get() < total) {
 								int dec = random.nextInt(2);
 								if (dec == 1) {
-									tamperByteArray(curPacket.payload);
-									System.out.printf("Tampered %d from %s to %s\n", curPacket.pkt_no, curPacket.client_ip, curPacket.destination_ip);
+									curPacket.payload = tamperByteArray(curPacket.payload);
+//									System.out.printf("Tampered %d from %s to %s\n", curPacket.pkt_no, curPacket.client_ip, curPacket.destination_ip);
 									cnt.inc();
 								}
 							}
             				
-            				if (curPacket.msg_name.equals("resend")) {
-            					System.out.printf("Resend request from %s\n", curPacket.client_ip);
-            				}
+//            				if (curPacket.msg_name.equals("resend")) {
+//            					System.out.printf("Resend request from %s\n", curPacket.client_ip);
+//            				}
             				oos.writeObject(curPacket);
             			} catch(IOException e) {
             				e.printStackTrace();

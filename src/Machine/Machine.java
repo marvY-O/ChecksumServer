@@ -74,16 +74,15 @@ public class Machine{
             
             oos.writeObject(cert);
             
-    		while (true) {
-    			try {
-    				cert = (SecurityCertificate) ois.readObject();
-    				if (cert != null) break;
-    			} catch(IOException e) {
-    				
-    			} catch(ClassNotFoundException e) {
-    				
-    			}
-    		}
+    		
+			try {
+				cert = (SecurityCertificate) ois.readObject();
+			} catch(IOException e) {
+				
+			} catch(ClassNotFoundException e) {
+				
+			}
+    		
     		
     		if (cert.CertificateID.equals("NULL")) {
     			System.out.println("Wrong Credentials provided!!");
@@ -258,9 +257,7 @@ public class Machine{
             			while (true) {
 	            			try {
 	            				Packet p = (Packet) ois.readObject();
-	            				System.out.println(p.pkt_no);
 	            				long actualValue = Checksum.computeChecksum(p.payload) ;
-	            				System.out.printf("Actual: %l, given: %l", actualValue, p.checksum);
 	            				if (actualValue != p.checksum) {
 	            					System.out.printf("\nRequesting for packet %d again as checksum verification failed!\n", p.pkt_no);
 	            					synchronized(buffer) {
@@ -297,11 +294,13 @@ public class Machine{
             		}
             	};
             	
+            	Thread send = new Thread(sender);
+                send.start();
+                
             	Thread recv = new Thread(reciever);
                 recv.start();
                 
-                Thread send = new Thread(sender);
-                send.start();
+                
 
             }
             else {

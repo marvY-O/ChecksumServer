@@ -16,7 +16,7 @@ public class run {
                     Enumeration<InetAddress> addresses = iface.getInetAddresses();
                     while (addresses.hasMoreElements()) {
                         InetAddress addr = addresses.nextElement();
-                        if (addr.getAddress().length == 4) { // filter IPv4 addresses
+                        if (addr.getAddress().length == 4) { 
                             serverIP = addr.getHostAddress();
                         }
                     }
